@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ims/screens/student_screen.dart';
 import 'package:ims/utlis/colors.dart';
 import 'package:ims/widgets/button_widget.dart';
 import 'package:ims/widgets/text_widget.dart';
@@ -136,49 +137,55 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
               Expanded(
                 child: ListView.builder(
                   itemBuilder: (context, index) {
-                    return Card(
-                      child: Container(
-                        width: 300,
-                        height: 80,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.account_circle,
-                                    size: 50,
-                                  ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  TextWidget(
-                                    text: 'Name here',
-                                    fontSize: 14,
-                                    fontFamily: 'Bold',
-                                  ),
-                                  const Expanded(
-                                    child: SizedBox(
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const StudentScreen()));
+                      },
+                      child: Card(
+                        child: Container(
+                          width: 300,
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.account_circle,
+                                      size: 50,
+                                    ),
+                                    const SizedBox(
                                       width: 10,
                                     ),
-                                  ),
-                                  TextWidget(
-                                    text: '3rd Year, BSIT',
-                                    fontSize: 14,
-                                    fontFamily: 'Bold',
-                                  ),
-                                ],
-                              ),
-                              TextWidget(
-                                text: 'Tap to view details',
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                            ],
+                                    TextWidget(
+                                      text: 'Name here',
+                                      fontSize: 14,
+                                      fontFamily: 'Bold',
+                                    ),
+                                    const Expanded(
+                                      child: SizedBox(
+                                        width: 10,
+                                      ),
+                                    ),
+                                    TextWidget(
+                                      text: '3rd Year, BSIT',
+                                      fontSize: 14,
+                                      fontFamily: 'Bold',
+                                    ),
+                                  ],
+                                ),
+                                TextWidget(
+                                  text: 'Tap to view details',
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
