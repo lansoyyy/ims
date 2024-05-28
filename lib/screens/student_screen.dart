@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ims/screens/form_screen.dart';
 import 'package:ims/utlis/colors.dart';
 import 'package:ims/widgets/text_widget.dart';
 
@@ -303,7 +304,10 @@ class StudentScreen extends StatelessWidget {
                 height: 10,
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const FormScreen()));
+                },
                 child: TextWidget(
                   text: 'Create Academic Advising Form ',
                   fontSize: 14,
