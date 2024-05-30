@@ -43,6 +43,8 @@ dependencies:
   firebase_auth:
   url_launcher:
   salomon_bottom_bar:
+  intl:
+  cell_calendar:
 
 dev_dependencies:
   flutter_test:

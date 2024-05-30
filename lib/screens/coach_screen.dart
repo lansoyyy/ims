@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ims/screens/coach_appointment_screen.dart';
 import 'package:ims/screens/coach_home_screen.dart';
 import 'package:ims/utlis/colors.dart';
 
@@ -16,7 +17,7 @@ class _CoachScreenState extends State<CoachScreen> {
 
   List tabs = [
     const CoachHomeScreen(),
-    const SizedBox(),
+    const CoachAppointmentScreen(),
   ];
   @override
   Widget build(BuildContext context) {
