@@ -1,4 +1,6 @@
 import 'package:cell_calendar/cell_calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -65,72 +67,95 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
                 height: 500,
                 width: double.infinity,
                 child: CellCalendar(
-                    onCellTapped: (p0) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: 300,
-                                    width: double.infinity,
-                                    child: ListView.separated(
-                                        itemBuilder: (context, index) {
-                                          return ListTile(
-                                            leading: const Icon(
-                                              Icons.account_circle_outlined,
-                                            ),
-                                            title: TextWidget(
-                                              text: 'Name here',
-                                              fontSize: 14,
-                                              fontFamily: 'Bold',
-                                            ),
-                                            trailing: TextWidget(
-                                              text: 'Time here',
-                                              fontSize: 12,
-                                              fontFamily: 'Medium',
-                                            ),
-                                          );
-                                        },
-                                        separatorBuilder: (context, index) {
-                                          return const Divider();
-                                        },
-                                        itemCount: 5),
-                                  ),
-                                  Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: TextWidget(
-                                        text: 'Close',
-                                        fontSize: 18,
-                                        fontFamily: 'Bold',
-                                      ),
+                  onCellTapped: (p0) {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return Dialog(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                StreamBuilder<QuerySnapshot>(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('Appointments')
+                                        .where('coachid',
+                                            isEqualTo: FirebaseAuth
+                                                .instance.currentUser!.uid)
+                                        .where('day', isEqualTo: p0.day)
+                                        .where('month', isEqualTo: p0.month)
+                                        .where('year', isEqualTo: p0.year)
+                                        .snapshots(),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      if (snapshot.hasError) {
+                                        print(snapshot.error);
+                                        return const Center(
+                                            child: Text('Error'));
+                                      }
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const Padding(
+                                          padding: EdgeInsets.only(top: 50),
+                                          child: Center(
+                                              child: CircularProgressIndicator(
+                                            color: Colors.black,
+                                          )),
+                                        );
+                                      }
+
+                                      final data = snapshot.requireData;
+                                      return SizedBox(
+                                        height: 300,
+                                        width: double.infinity,
+                                        child: ListView.separated(
+                                            itemBuilder: (context, index) {
+                                              return ListTile(
+                                                leading: const Icon(
+                                                  Icons.account_circle_outlined,
+                                                ),
+                                                title: TextWidget(
+                                                  text: data.docs[index]
+                                                      ['studentname'],
+                                                  fontSize: 14,
+                                                  fontFamily: 'Bold',
+                                                ),
+                                                trailing: TextWidget(
+                                                  text: data.docs[index]
+                                                      ['time'],
+                                                  fontSize: 12,
+                                                  fontFamily: 'Medium',
+                                                ),
+                                              );
+                                            },
+                                            separatorBuilder: (context, index) {
+                                              return const Divider();
+                                            },
+                                            itemCount: data.docs.length),
+                                      );
+                                    }),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: TextWidget(
+                                      text: 'Close',
+                                      fontSize: 18,
+                                      fontFamily: 'Bold',
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      );
-                    },
-                    events: [
-                      CalendarEvent(
-                          eventName: '123',
-                          eventDate: DateTime(2024, 5, 31),
-                          eventTextStyle: const TextStyle(
-                            fontFamily: 'Regular',
-                            color: Colors.white,
-                            fontSize: 11,
-                          ))
-                    ]),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),
