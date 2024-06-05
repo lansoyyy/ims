@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ims/screens/student_screen.dart';
@@ -19,6 +20,10 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
   String nameSearched = '';
   @override
   Widget build(BuildContext context) {
+    final Stream<DocumentSnapshot> userData = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots();
     return Scaffold(
       backgroundColor: secondary,
       body: SafeArea(
@@ -27,36 +32,49 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.account_circle,
-                      size: 50,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        TextWidget(
-                          text: 'Name here',
-                          fontSize: 18,
-                          fontFamily: 'Bold',
-                        ),
-                        TextWidget(
-                          text: 'CURRICULUM COACH',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              StreamBuilder<DocumentSnapshot>(
+                  stream: userData,
+                  builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('Loading'));
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Something went wrong'));
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    dynamic data = snapshot.data;
+                    return Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.account_circle,
+                            size: 50,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              TextWidget(
+                                text: data['name'],
+                                fontSize: 18,
+                                fontFamily: 'Bold',
+                              ),
+                              TextWidget(
+                                text: data['coachtype'],
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),

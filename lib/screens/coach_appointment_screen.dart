@@ -8,6 +8,7 @@ import 'package:ims/screens/student_screen.dart';
 import 'package:ims/utlis/colors.dart';
 import 'package:ims/widgets/button_widget.dart';
 import 'package:ims/widgets/text_widget.dart';
+import 'package:ims/widgets/toast_widget.dart';
 
 class CoachAppointmentScreen extends StatefulWidget {
   const CoachAppointmentScreen({super.key});
@@ -21,6 +22,10 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
   String nameSearched = '';
   @override
   Widget build(BuildContext context) {
+    final Stream<DocumentSnapshot> userData = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots();
     return Scaffold(
       backgroundColor: secondary,
       body: SafeArea(
@@ -29,36 +34,81 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.account_circle,
-                      size: 50,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        TextWidget(
-                          text: 'Name here',
-                          fontSize: 18,
-                          fontFamily: 'Bold',
-                        ),
-                        TextWidget(
-                          text: 'CURRICULUM COACH',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              StreamBuilder<DocumentSnapshot>(
+                  stream: userData,
+                  builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('Loading'));
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Something went wrong'));
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    dynamic data = snapshot.data;
+                    return Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.account_circle,
+                            size: 50,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              TextWidget(
+                                text: data['name'],
+                                fontSize: 18,
+                                fontFamily: 'Bold',
+                              ),
+                              TextWidget(
+                                text: data['coachtype'],
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                          const Expanded(
+                            child: SizedBox(
+                              width: 10,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _selectDate(context).whenComplete(() {
+                                _selectFromTime(context).whenComplete(() {
+                                  _selectToTime(context).whenComplete(() async {
+                                    await FirebaseFirestore.instance
+                                        .collection('Users')
+                                        .doc(data.id)
+                                        .update({
+                                      'day': _selectedDate.toString(),
+                                      'timefrom':
+                                          _fromTime!.format(context).toString(),
+                                      'timeto':
+                                          _toTime!.format(context).toString(),
+                                    });
+
+                                    showToast('Availability updated!');
+                                  });
+                                });
+                              });
+                            },
+                            icon: const Icon(
+                              color: Colors.black,
+                              Icons.access_time_outlined,
+                              size: 35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
               const SizedBox(
                 height: 10,
               ),
@@ -162,5 +212,49 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
         ),
       ),
     );
+  }
+
+  DateTime? _selectedDate;
+  TimeOfDay? _fromTime;
+  TimeOfDay? _toTime;
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectFromTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      helpText: 'From',
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && picked != _fromTime) {
+      setState(() {
+        _fromTime = picked;
+      });
+    }
+  }
+
+  Future<void> _selectToTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      helpText: 'To',
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && picked != _toTime) {
+      setState(() {
+        _toTime = picked;
+      });
+    }
   }
 }
