@@ -142,37 +142,66 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 10,
               ),
               StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('Users')
-                      .where('type', isEqualTo: 'Coach')
-                      .where('name',
-                          isGreaterThanOrEqualTo:
-                              toBeginningOfSentenceCase(nameSearched))
-                      .where('name',
-                          isLessThan:
-                              '${toBeginningOfSentenceCase(nameSearched)}z')
-                      .snapshots(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasError) {
-                      print(snapshot.error);
-                      return const Center(child: Text('Error'));
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.only(top: 50),
-                        child: Center(
-                            child: CircularProgressIndicator(
+                stream: FirebaseFirestore.instance
+                    .collection('Users')
+                    .where('type', isEqualTo: 'Coach')
+                    .where('name',
+                        isGreaterThanOrEqualTo:
+                            toBeginningOfSentenceCase(nameSearched))
+                    .where('name',
+                        isLessThan:
+                            '${toBeginningOfSentenceCase(nameSearched)}z')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                        child: CircularProgressIndicator(
                           color: Colors.black,
-                        )),
-                      );
-                    }
+                        ),
+                      ),
+                    );
+                  }
 
-                    final data = snapshot.requireData;
-                    return Expanded(
-                      child: ListView.builder(
-                        itemCount: data.docs.length,
-                        itemBuilder: (context, index) {
+                  final data = snapshot.requireData;
+                  final now = DateTime.now();
+
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: data.docs.length,
+                      itemBuilder: (context, index) {
+                        // Parse the date and time data from Firestore
+                        DateTime day = DateTime.parse(data.docs[index]['day']);
+                        TimeOfDay timeFrom = TimeOfDay(
+                          hour: int.parse(
+                              data.docs[index]['timefrom'].split(':')[0]),
+                          minute: int.parse(data.docs[index]['timefrom']
+                              .split(':')[1]
+                              .split(' ')[0]),
+                        );
+                        TimeOfDay timeTo = TimeOfDay(
+                          hour: int.parse(
+                              data.docs[index]['timeto'].split(':')[0]),
+                          minute: int.parse(data.docs[index]['timeto']
+                              .split(':')[1]
+                              .split(' ')[0]),
+                        );
+
+                        // Convert TimeOfDay to DateTime for comparison
+                        final fromDateTime = DateTime(day.year, day.month,
+                            day.day, timeFrom.hour, timeFrom.minute);
+                        final toDateTime = DateTime(day.year, day.month,
+                            day.day, timeTo.hour, timeTo.minute);
+
+                        // Check if the current date and time is within the range
+                        if (now.isAfter(fromDateTime) &&
+                            now.isBefore(toDateTime)) {
                           return Card(
                             child: Container(
                               width: 300,
@@ -234,10 +263,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           );
-                        },
-                      ),
-                    );
-                  }),
+                        } else {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  );
+                },
+              )
             ],
           ),
         ),
