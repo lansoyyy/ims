@@ -7,6 +7,7 @@ import 'package:ims/services/add_appointment.dart';
 import 'package:ims/utlis/colors.dart';
 import 'package:ims/widgets/button_widget.dart';
 import 'package:ims/widgets/text_widget.dart';
+import 'package:ims/widgets/textfield_widget.dart';
 import 'package:ims/widgets/toast_widget.dart';
 import 'package:intl/intl.dart';
 
@@ -278,6 +279,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  final concern = TextEditingController();
+
   showAppointment(data) {
     showModalBottomSheet(
       context: context,
@@ -388,6 +391,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(
                               height: 10,
                             ),
+                            TextFieldWidget(
+                              width: double.infinity,
+                              controller: concern,
+                              label: 'Type of Concern',
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
                             TextWidget(
                               text: 'Select Date',
                               fontSize: 14,
@@ -477,7 +488,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       data.id,
                                       selectedTime,
                                       mydata['course'],
-                                      mydata['yearlevel']);
+                                      mydata['yearlevel'],
+                                      concern.text);
                                   showSuccessDialog();
                                   // Navigator.pop(context);
                                 },

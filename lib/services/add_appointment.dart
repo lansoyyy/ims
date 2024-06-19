@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 Future<String> addAppointment(day, month, year, studentname, studentid,
-    coachname, coachid, time, section, level) async {
+    coachname, coachid, time, section, level, concern) async {
   final docUser = FirebaseFirestore.instance.collection('Appointments').doc();
 
   final json = {
@@ -19,7 +19,8 @@ Future<String> addAppointment(day, month, year, studentname, studentid,
     'month': month,
     'year': year,
     'dateTime': DateTime.now(),
-    'status': 'Pending'
+    'status': 'Pending',
+    'concern': concern,
   };
 
   await docUser.set(json);

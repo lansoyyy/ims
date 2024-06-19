@@ -136,6 +136,8 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
                                         .where('day', isEqualTo: p0.day)
                                         .where('month', isEqualTo: p0.month)
                                         .where('year', isEqualTo: p0.year)
+                                        .where('status',
+                                            isNotEqualTo: 'Rejected')
                                         .snapshots(),
                                     builder: (BuildContext context,
                                         AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -162,6 +164,83 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
                                         child: ListView.separated(
                                             itemBuilder: (context, index) {
                                               return ListTile(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  showModalBottomSheet(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return SizedBox(
+                                                        height: 125,
+                                                        child: Column(
+                                                          children: [
+                                                            ListTile(
+                                                              onTap: () async {
+                                                                Navigator.pop(
+                                                                    context);
+                                                                await FirebaseFirestore
+                                                                    .instance
+                                                                    .collection(
+                                                                        'Appointments')
+                                                                    .doc(data
+                                                                        .docs[
+                                                                            index]
+                                                                        .id)
+                                                                    .update({
+                                                                  'status':
+                                                                      'Accepted'
+                                                                });
+                                                              },
+                                                              leading:
+                                                                  const Icon(
+                                                                Icons.check,
+                                                                color: Colors
+                                                                    .green,
+                                                              ),
+                                                              trailing:
+                                                                  TextWidget(
+                                                                text: 'Accept',
+                                                                fontSize: 14,
+                                                                color: Colors
+                                                                    .green,
+                                                              ),
+                                                            ),
+                                                            ListTile(
+                                                              onTap: () async {
+                                                                Navigator.pop(
+                                                                    context);
+                                                                await FirebaseFirestore
+                                                                    .instance
+                                                                    .collection(
+                                                                        'Appointments')
+                                                                    .doc(data
+                                                                        .docs[
+                                                                            index]
+                                                                        .id)
+                                                                    .update({
+                                                                  'status':
+                                                                      'Rejected'
+                                                                });
+                                                              },
+                                                              leading:
+                                                                  const Icon(
+                                                                Icons.close,
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                              trailing:
+                                                                  TextWidget(
+                                                                text: 'Decline',
+                                                                fontSize: 14,
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                                 leading: const Icon(
                                                   Icons.account_circle_outlined,
                                                 ),
@@ -171,9 +250,15 @@ class _CoachAppointmentScreenState extends State<CoachAppointmentScreen> {
                                                   fontSize: 14,
                                                   fontFamily: 'Bold',
                                                 ),
-                                                trailing: TextWidget(
+                                                subtitle: TextWidget(
                                                   text: data.docs[index]
-                                                      ['time'],
+                                                      ['concern'],
+                                                  fontSize: 12,
+                                                  fontFamily: 'Bold',
+                                                ),
+                                                trailing: TextWidget(
+                                                  text:
+                                                      '${data.docs[index]['time']}',
                                                   fontSize: 12,
                                                   fontFamily: 'Medium',
                                                 ),
