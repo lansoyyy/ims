@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ims/screens/student_form_screen.dart';
 
 import '../utlis/colors.dart';
 import '../widgets/button_widget.dart';
@@ -62,7 +63,7 @@ class NotifScreen extends StatelessWidget {
                     );
                   }),
               SizedBox(
-                height: 500,
+                height: 250,
                 child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('Appointments')
@@ -161,6 +162,136 @@ class NotifScreen extends StatelessWidget {
                                 ),
                               ),
                             );
+                          },
+                        ),
+                      );
+                    }),
+              ),
+              TextWidget(
+                text: 'Academic Advising Forms',
+                fontSize: 14,
+              ),
+              SizedBox(
+                height: 300,
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('Forms')
+                        .where('studentid',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error);
+                        return const Center(child: Text('Error'));
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 50),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                            ),
+                          ),
+                        );
+                      }
+
+                      final data = snapshot.requireData;
+
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: data.docs.length,
+                          itemBuilder: (context, index) {
+                            // Check if the current date and time is within the range
+
+                            return StreamBuilder<DocumentSnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('Users')
+                                    .doc(data.docs[index]['uid'])
+                                    .snapshots(),
+                                builder: (context,
+                                    AsyncSnapshot<DocumentSnapshot> snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return const Center(child: Text('Loading'));
+                                  } else if (snapshot.hasError) {
+                                    return const Center(
+                                        child: Text('Something went wrong'));
+                                  } else if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  dynamic coachdata = snapshot.data;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const StudentFormScreen()));
+                                    },
+                                    child: Card(
+                                      child: Container(
+                                        width: 300,
+                                        height: 75,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.account_circle,
+                                                size: 65,
+                                              ),
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SizedBox(
+                                                    width: 225,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        TextWidget(
+                                                          text:
+                                                              'Sent by: ${coachdata['name']}',
+                                                          fontSize: 14,
+                                                          fontFamily: 'Bold',
+                                                        ),
+                                                        const Expanded(
+                                                            child: SizedBox()),
+                                                        TextWidget(
+                                                          text: 'Open Form',
+                                                          fontSize: 11,
+                                                          fontFamily: 'Medium',
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  TextWidget(
+                                                    text:
+                                                        '${coachdata['coachtype']}',
+                                                    fontSize: 11,
+                                                    fontFamily: 'Medium',
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                });
                           },
                         ),
                       );
